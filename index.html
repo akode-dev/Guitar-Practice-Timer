@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Guitar Practice Timer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .timer-metronome-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+        }
+        .timer-display {
+            font-size: 60px;
+            font-weight: bold;
+            font-family: monospace;
+        }
+        .metronome {
+            text-align: right;
+        }
+        .exercise-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin: 20px 0;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .exercise-display {
+            font-size: 20px;
+            flex: 2;
+        }
+        .controls-container {
+            flex: 1;
+            text-align: right;
+            margin-left: 20px;
+        }
+        button {
+            font-size: 18px;
+            padding: 10px 20px;
+            margin: 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            background-color: #4CAF50;
+            color: white;
+        }
+        .nav-button {
+            background-color: #2196F3;
+            font-size: 14px;
+            padding: 8px 16px;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .random-pattern {
+            font-size: 32px;
+            text-align: center;
+            margin: 20px 0;
+            font-family: monospace;
+        }
+        .mobile-friendly {
+            max-width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        .exercise-image {
+            max-width: 100%;
+            height: auto;
+            margin-top: 20px;
+            border-radius: 8px;
+        }
+        .exercise-timer-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        .exercise-timer {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .time-display {
+            color: #ff0000;
+        }
+
+        .time-display.rest {
+            color: #4CAF50;
+        }
+        
+        .pattern-display {
+            font-size: 24px;
+            font-family: monospace;
+            font-weight: bold;
+        }
+
+        .pattern-warning {
+            display: none;
+            background-color: #FFF3CD;
+            color: #856404;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            text-align: center;
+            animation: flash 1s infinite;
+        }
+
+        @keyframes flash {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .metronome-buttons {
+            margin-top: 10px;
+        }
+        .metronome-buttons button {
+            background-color: #2196F3;
+            color: white;
+            padding: 5px 10px;
+            margin: 5px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="timer-metronome-container">
+        <div class="timer-display" id="mainTimer">60:00</div>
+        <div class="metronome">
+            <h3>Метроном</h3>
+            <button id="metronomeToggle">Включить метроном</button>
+            <input type="range" id="bpmSlider" min="40" max="200" value="70">
+            <span id="bpmValue">70 BPM</span>
+            <div class="metronome-buttons">
+                <button class="bpm-preset" data-bpm="60">60 BPM</button>
+                <button class="bpm-preset" data-bpm="70">70 BPM</button>
+                <button class="bpm-preset" data-bpm="80">80 BPM</button>
+                <button class="bpm-preset" data-bpm="160">160 BPM</button>
+            </div>
+        </div>
+    </div>
+    <div class="pattern-warning" id="patternWarning">
+        Внимание! Паттерн изменится через <span id="patternCountdown">5</span> секунд
+    </div>
+    <div class="exercise-timer-container">
+        <div class="exercise-timer">
+            <span>Осталось времени: </span>
+            <span class="time-display" id="exerciseTimeDisplay">00:00</span>
+        </div>
+        <div class="pattern-display" id="patternDisplayHeader"></div>
+    </div>
+    <div class="exercise-container">
+        <div class="exercise-display" id="currentExercise">
+            Подготовьтесь к началу тренировки
+        </div>
+        <div class="controls-container">
+            <div class="controls">
+                <button id="startButton">Начать</button>
+                <button id="pauseButton" disabled>Пауза</button>
+                <button id="resetButton">Сброс</button>
+            </div>
+            <div class="navigation-controls">
+                <button class="nav-button" id="prevButton" disabled>← Предыдущее</button>
+                <button class="nav-button" id="nextButton" disabled>Следующее →</button>
+            </div>
+        </div>
+    </div>
+    <input type="range" id="exerciseTimeSlider" min="0" max="600" value="0" class="mobile-friendly">
+    <div class="random-pattern" id="randomPattern"></div>
+
+    <script>
+        const exercises = [
+             {
+                name: "Упражнение 0: ти-ти-та-ти",
+                duration: 600,
+                description: "Выполняйте упражнение ти-ти-та-ти. Комбинация будет меняться.",
+                imageUrl: "https://example.com/image0.jpg",
+                youtubeLink: "https://www.youtube.com/watch?v=example&t=30s",
+                type: "pattern",
+                patternInterval: 10,
+                patterns: [ 
+                    "ти-та-та", 
+                    "ти-ти-та", 
+                    "та-ти-ти", 
+                    "ти-ти-ти-та",
+                    "та-ти-ти-ти", 
+                    "ти-та-ти-ти", 
+                    "ти-ти-та-ти"
+                ]
+            },
+            {
+                name: "Упражнение 1: хаммер-пулл на шестой струне",
+                duration: 420,
+                description: "Выполняйте упражнение на шестую струну, задействуя все пальцы. Для мизинца 8 раз, для остальных 4 раза.",
+                imageUrl: "https://example.com/image1.jpg",
+                youtubeLink: "https://www.youtube.com/watch?v=gfhR5NtxcU4&t=43s",
+                type: "standard"
+            },
+            {
+                name: "Упражнение 2: триоли на второй струне",
+                duration: 300,
+                description: "Практикуйте триоли на второй струне, используя переменный штрих и меняя струны каждые 4 такта.",
+                imageUrl: "https://example.com/image2.jpg",
+                youtubeLink: "https://www.youtube.com/watch?v=example&t=60s",
+                type: "standard"
+            },
+            {
+                name: "Упражнение 3: легато на третьей струне",
+                duration: 480,
+                description: "Играйте легато на третьей струне, используя все пальцы и чередуя их для тренировки силы.",
+                imageUrl: "https://example.com/image3.jpg",
+                youtubeLink: "https://www.youtube.com/watch?v=example&t=75s",
+                type: "standard"
+            },
+            {
+                name: "Упражнение 4: вибрато на четвертой струне",
+                duration: 360,
+                description: "Практикуйте вибрато на четвертой струне, используя все комбинации пальцев.",
+                imageUrl: "https://example.com/image4.jpg",
+                youtubeLink: "https://www.youtube.com/watch?v=example&t=90s",
+                type: "standard"
+            },
+            {
+                name: "Упражнение 5: подтяжки на пятой струне",
+                duration: 420,
+                description: "Практикуйте подтяжки на пятой струне, контролируя высоту звука и возвращение струны в исходное положение.",
+                imageUrl: "https://example.com/image5.jpg",
+                youtubeLink: "https://www.youtube.com/watch?v=example&t=105s",
+                type: "standard"
+            },
+            {
+                name: "Упражнение 6: свип на шестой струне",
+                duration: 540,
+                description: "Отрабатывайте свип на шестой струне, двигаясь по струнам вверх и вниз с контролем чистоты звука.",
+                imageUrl: "https://example.com/image6.jpg",
+                youtubeLink: "https://www.youtube.com/watch?v=example&t=120s",
+                type: "standard"
+            }
+        ];
+
+        let currentExercise = 0;
+        let timeRemaining = 3600;
+        let exerciseTimeRemaining = 0;
+        let timerInterval = null;
+        let patternInterval = null;
+        let isPaused = false;
+        let metronomeInterval = null;
+        let audioContext = null;
+        let isMetronomeOn = false;
+        let restInterval = null;
+        let patternWarningTimeout = null;
+        let warningBeep = null;
+		
+	   function createWarningBeep() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 440;
+            gainNode.gain.value = 0.1;
+            
+            oscillator.start();
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.3);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        }
+		
+function startPatternWarning() {
+    const warningElement = document.getElementById('patternWarning');
+    const countdownElement = document.getElementById('patternCountdown');
+    let countdown = 5;
+
+    warningElement.style.display = 'block';
+    countdownElement.textContent = countdown;
+
+    const countdownInterval = setInterval(() => {
+        countdown--;
+        countdownElement.textContent = countdown;
+
+        if (countdown <= 0) {
+            clearInterval(countdownInterval);
+            warningElement.style.display = 'none';
+            if (exerciseTimeRemaining <= 0) {
+                switchToNextExercise();
+            }
+        }
+    }, 1000);
+}
+
+function switchToNextExercise() {
+    if (currentExercise < exercises.length - 1) {
+        currentExercise++;
+        switchToExercise(currentExercise);
+    } else {
+        endExercise();
+    }
+}
+
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+
+        function calculateTotalExercisesTime() {
+            return exercises.reduce((total, exercise) => total + exercise.duration, 0);
+        }
+
+        // Функция для обновления состояния навигационных кнопок
+        function updateNavigationButtons() {
+            document.getElementById('prevButton').disabled = currentExercise <= 0;
+            document.getElementById('nextButton').disabled = currentExercise >= exercises.length - 1;
+        }
+        
+function calculateTotalRemainingTime() {
+    let totalTime = calculateTotalExercisesTime(); // Общее время всех упражнений
+    let elapsedTime = 0;
+    
+    // Считаем потраченное время на завершенные упражнения
+    for (let i = 0; i < currentExercise; i++) {
+        elapsedTime += exercises[i].duration;
+    }
+    
+    // Добавляем потраченное время текущего упражнения
+    elapsedTime += exercises[currentExercise].duration - exerciseTimeRemaining;
+    
+    return totalTime - elapsedTime;
+}
+
+
+
+function updateDisplay() {
+    document.getElementById('mainTimer').textContent = formatTime(timeRemaining);
+    document.getElementById('exerciseTimeDisplay').textContent = formatTime(exerciseTimeRemaining);
+    
+    // Обновляем отображение паттерна в header только для упражнений типа pattern
+    if (currentExercise < exercises.length && exercises[currentExercise].type === 'pattern') {
+        document.getElementById('patternDisplayHeader').style.display = 'block';
+    } else {
+        document.getElementById('patternDisplayHeader').style.display = 'none';
+    }
+
+    if (currentExercise < exercises.length) {
+        let currentImage = exercises[currentExercise].imageUrl;
+        let currentYoutube = exercises[currentExercise].youtubeLink;
+
+        const img = new Image();
+        img.src = currentImage;
+        img.onload = function() {
+            document.getElementById('currentExercise').innerHTML = `
+                <h2>${exercises[currentExercise].name}</h2>
+                <p>${exercises[currentExercise].description}</p>
+                <img src="${currentImage}" alt="Упражнение изображение" class="exercise-image">
+                <p><a href="${currentYoutube}" target="_blank">Видео на YouTube</a></p>
+            `;
+        };
+        img.onerror = function() {
+            document.getElementById('currentExercise').innerHTML = `
+                <h2>${exercises[currentExercise].name}</h2>
+                <p>${exercises[currentExercise].description}</p>
+                <p>Изображение недоступно</p>
+                <p><a href="${currentYoutube}" target="_blank">Видео на YouTube</a></p>
+            `;
+        };
+    }
+}
+
+ function generateRandomPattern() {
+            if (currentExercise < exercises.length && exercises[currentExercise].type === 'pattern') {
+                startPatternWarning();
+                setTimeout(() => {
+    const exercise = exercises[currentExercise];
+    const pattern = exercise.patterns[Math.floor(Math.random() * exercise.patterns.length)];
+    document.getElementById('patternDisplayHeader').textContent = pattern;
+    document.getElementById('patternDisplayHeader').style.display = 'block';
+
+    if (exerciseTimeRemaining <= 0) {
+        switchToNextExercise();
+    }
+}, 5000);
+            }
+        }
+
+function switchToExercise(index) {
+    if (index >= 0 && index < exercises.length) {
+        currentExercise = index;
+        exerciseTimeRemaining = exercises[index].duration;
+        document.getElementById('exerciseTimeSlider').max = exercises[index].duration;
+        document.getElementById('exerciseTimeSlider').value = 0;
+        
+        timeRemaining = calculateTotalRemainingTime();
+        updateNavigationButtons();
+        
+        // Убираем работу с паттернами при переключении упражнений
+        document.getElementById('randomPattern').textContent = '';
+        if (patternInterval) {
+            clearInterval(patternInterval);
+            patternInterval = null;
+        }
+        
+        updateDisplay();
+    }
+}
+
+function startRestPeriod() {
+    // Сохраняем текущее состояние метронома
+    const wasMetronomeOn = isMetronomeOn;
+    const previousBpm = parseInt(document.getElementById('bpmSlider').value);
+    
+    // Выключаем метроном на время паузы
+    if (metronomeInterval) {
+        clearInterval(metronomeInterval);
+        isMetronomeOn = false;
+        document.getElementById('metronomeToggle').textContent = 'Включить метроном';
+    }
+
+    // Очищаем предыдущие интервалы
+    if (timerInterval) clearInterval(timerInterval);
+    if (patternInterval) clearInterval(patternInterval);
+    if (restInterval) clearInterval(restInterval);
+
+    let restTime = 10; // 10 секунд паузы
+    
+    // Меняем цвет таймера на зеленый
+    const timeDisplay = document.getElementById('exerciseTimeDisplay');
+    timeDisplay.classList.add('rest');
+    
+    // Обновляем отображение основного упражнения
+    document.getElementById('currentExercise').innerHTML = `
+        <h2>Пауза между упражнениями</h2>
+        <p>Подготовьтесь к следующему упражнению: ${exercises[currentExercise + 1].name}</p>
+    `;
+
+    // Воспроизводим звуковое предупреждение о начале паузы
+    createWarningBeep();
+    
+    // Создаём новый интервал для паузы
+    restInterval = setInterval(() => {
+        // Обновляем отображение времени
+        timeDisplay.textContent = formatTime(restTime);
+        
+        // Воспроизводим звуковой сигнал каждые 3 секунды
+        if (restTime <= 3) {
+            createWarningBeep();
+        }
+        
+        restTime--;
+        
+        if (restTime < 0) {
+            // Очищаем интервал паузы
+            clearInterval(restInterval);
+            
+            // Возвращаем красный цвет таймеру
+            timeDisplay.classList.remove('rest');
+            
+            // Переходим к следующему упражнению
+            currentExercise++;
+            
+            if (currentExercise < exercises.length) {
+                switchToExercise(currentExercise);
+                
+                // Восстанавливаем состояние метронома
+                if (wasMetronomeOn) {
+                    isMetronomeOn = true;
+                    document.getElementById('metronomeToggle').textContent = 'Выключить метроном';
+                    startMetronome(previousBpm);
+                }
+                
+                // Запускаем таймер для нового упражнения
+                timerInterval = setInterval(() => {
+                    if (timeRemaining <= 0 || exerciseTimeRemaining <= 0) {
+                        endExercise();
+                        return;
+                    }
+
+                    timeRemaining--;
+                    exerciseTimeRemaining--;
+                    
+                    document.getElementById('exerciseTimeSlider').value = 
+                        exercises[currentExercise].duration - exerciseTimeRemaining;
+
+                    if (exerciseTimeRemaining <= 0) {
+                        if (currentExercise < exercises.length - 1) {
+                            clearInterval(timerInterval);
+                            startRestPeriod();
+                        } else {
+                            endExercise();
+                        }
+                    }
+
+                    updateDisplay();
+                    updateNavigationButtons();
+                }, 1000);
+
+                // Если упражнение с паттернами, запускаем их обработку
+                if (exercises[currentExercise].type === 'pattern') {
+                    generateRandomPattern();
+                    const intervalMs = exercises[currentExercise].patternInterval * 1000;
+                    patternInterval = setInterval(generateRandomPattern, intervalMs);
+                }
+            } else {
+                endExercise();
+            }
+        }
+    }, 1000);
+
+    // Обновляем состояние кнопок
+    document.getElementById('startButton').disabled = true;
+    document.getElementById('pauseButton').disabled = false;
+    updateNavigationButtons();
+}
+
+       function startMetronome(bpm = null) {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        
+            if (metronomeInterval) {
+                clearInterval(metronomeInterval);
+            }
+        
+            // Если BPM передан как параметр, обновляем слайдер и отображение
+            if (bpm !== null) {
+                document.getElementById('bpmSlider').value = bpm;
+                document.getElementById('bpmValue').textContent = bpm + ' BPM';
+            }
+        
+            const currentBpm = parseInt(document.getElementById('bpmSlider').value);
+            const intervalMs = (60 / currentBpm) * 1000;
+        
+            metronomeInterval = setInterval(() => {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+        
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+        
+                oscillator.frequency.value = 880;
+                gainNode.gain.value = 0.1;
+        
+                oscillator.start();
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
+                oscillator.stop(audioContext.currentTime + 0.1);
+            }, intervalMs);
+        }
+
+function startTimer() {
+    if (isPaused) {
+        isPaused = false;
+    } else {
+        currentExercise = 0;
+        timeRemaining = calculateTotalExercisesTime();
+        exerciseTimeRemaining = exercises[0].duration;
+        generateRandomPattern();
+        if (exercises[currentExercise].type === 'pattern') {
+            const intervalMs = exercises[currentExercise].patternInterval * 1000;
+            patternInterval = setInterval(generateRandomPattern, intervalMs);
+        }
+    }
+
+    document.getElementById('startButton').disabled = true;
+    document.getElementById('pauseButton').disabled = false;
+    updateNavigationButtons();
+
+    timerInterval = setInterval(() => {
+        if (timeRemaining <= 0 || exerciseTimeRemaining <= 0) {
+            endExercise();
+            return;
+        }
+
+        timeRemaining--;
+        exerciseTimeRemaining--;
+        document.getElementById('exerciseTimeSlider').value = 
+            exercises[currentExercise].duration - exerciseTimeRemaining;
+
+        if (exerciseTimeRemaining <= 0) {
+            if (currentExercise < exercises.length - 1) {
+                clearInterval(timerInterval);
+                startRestPeriod();
+            } else {
+                endExercise();
+            }
+        } else {
+            updateDisplay();
+            updateNavigationButtons();
+        }
+    }, 1000);
+}
+
+function switchToExercise(index) {
+    if (index >= 0 && index < exercises.length) {
+        currentExercise = index;
+        exerciseTimeRemaining = exercises[index].duration;
+        
+        // Обновляем максимальное значение и текущее значение слайдера
+        const slider = document.getElementById('exerciseTimeSlider');
+        slider.max = exercises[index].duration;
+        slider.value = exercises[index].duration - exerciseTimeRemaining;
+        
+        timeRemaining = calculateTotalRemainingTime();
+        updateNavigationButtons();
+        
+        // Убираем работу с паттернами при переключении упражнений
+        document.getElementById('randomPattern').textContent = '';
+        if (patternInterval) {
+            clearInterval(patternInterval);
+            patternInterval = null;
+        }
+        
+        updateDisplay();
+    }
+}
+      
+        document.getElementById('startButton').addEventListener('click', startTimer);
+
+        document.getElementById('pauseButton').addEventListener('click', () => {
+            clearInterval(timerInterval);
+            if (patternInterval) clearInterval(patternInterval);
+            if (metronomeInterval) clearInterval(metronomeInterval);
+            isPaused = true;
+            document.getElementById('startButton').disabled = false;
+            document.getElementById('pauseButton').disabled = true;
+            document.getElementById('nextButton').disabled = true;
+            document.getElementById('prevButton').disabled = true;
+        });
+
+document.getElementById('resetButton').addEventListener('click', () => {
+    clearInterval(timerInterval);
+    clearInterval(patternInterval);
+    if (metronomeInterval) clearInterval(metronomeInterval);
+    timeRemaining = calculateTotalExercisesTime(); // Используем общее время упражнений
+    currentExercise = 0;
+    exerciseTimeRemaining = exercises[0].duration;
+    isPaused = false;
+    document.getElementById('startButton').disabled = false;
+    document.getElementById('pauseButton').disabled = true;
+    document.getElementById('nextButton').disabled = true;
+    document.getElementById('prevButton').disabled = true;
+    document.getElementById('randomPattern').textContent = '';
+    updateDisplay();
+});
+
+        document.querySelectorAll('.bpm-preset').forEach(button => {
+            button.addEventListener('click', function() {
+                const bpm = parseInt(this.getAttribute('data-bpm'));
+                if (!isMetronomeOn) {
+                    isMetronomeOn = true;
+                    document.getElementById('metronomeToggle').textContent = 'Выключить метроном';
+                }
+                startMetronome(bpm);
+            });
+        });
+
+        document.getElementById('metronomeToggle').addEventListener('click', function() {
+            if (!isMetronomeOn) {
+                startMetronome();
+                this.textContent = 'Выключить метроном';
+                isMetronomeOn = true;
+            } else {
+                if (metronomeInterval) clearInterval(metronomeInterval);
+                this.textContent = 'Включить метроном';
+                isMetronomeOn = false;
+            }
+        });
+
+        document.getElementById('bpmSlider').addEventListener('input', function() {
+            const bpm = this.value;
+            document.getElementById('bpmValue').textContent = bpm + ' BPM';
+            if (isMetronomeOn) {
+                startMetronome(bpm);
+            }
+        });
+
+document.getElementById('exerciseTimeSlider').addEventListener('input', function() {
+    const slider = this;
+    const maxDuration = exercises[currentExercise].duration;
+    
+    // Проверяем и обновляем максимальное значение слайдера
+    if (parseInt(slider.max) !== maxDuration) {
+        slider.max = maxDuration;
+    }
+    
+    const sliderValue = Math.min(parseInt(slider.value), maxDuration);
+    exerciseTimeRemaining = maxDuration - sliderValue;
+    
+    if (exerciseTimeRemaining < 0) {
+        exerciseTimeRemaining = 0;
+    }
+    
+    // Обновляем только время текущего упражнения, не трогая общий таймер
+    document.getElementById('exerciseTimeDisplay').textContent = formatTime(exerciseTimeRemaining);
+    
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            if (exerciseTimeRemaining <= 0) {
+                if (currentExercise < exercises.length - 1) {
+                    clearInterval(timerInterval);
+                    startRestPeriod();
+                } else {
+                    endExercise();
+                }
+                return;
+            }
+            
+            timeRemaining--;
+            exerciseTimeRemaining--;
+            
+            slider.value = maxDuration - exerciseTimeRemaining;
+            
+            updateDisplay();
+        }, 1000);
+    }
+});
+      
+document.getElementById('prevButton').addEventListener('click', () => {
+    if (currentExercise > 0) {
+        clearInterval(timerInterval);
+        if (patternInterval) clearInterval(patternInterval);
+        if (restInterval) clearInterval(restInterval);
+        currentExercise--;
+        switchToExercise(currentExercise);
+        
+        timerInterval = setInterval(() => {
+            if (timeRemaining <= 0 || exerciseTimeRemaining <= 0) {
+                endExercise();
+                return;
+            }
+
+            timeRemaining--;
+            exerciseTimeRemaining--;
+            
+            document.getElementById('exerciseTimeSlider').value = 
+                exercises[currentExercise].duration - exerciseTimeRemaining;
+
+            if (exerciseTimeRemaining <= 0) {
+                if (currentExercise < exercises.length - 1) {
+                    clearInterval(timerInterval);
+                    startRestPeriod();
+                } else {
+                    endExercise();
+                }
+            }
+
+            updateDisplay();
+            updateNavigationButtons();
+        }, 1000);
+
+        // Запускаем паттерн для соответствующего упражнения
+        if (exercises[currentExercise].type === 'pattern') {
+            generateRandomPattern();
+            const intervalMs = exercises[currentExercise].patternInterval * 1000;
+            patternInterval = setInterval(generateRandomPattern, intervalMs);
+        } else {
+            // Если текущее упражнение не паттерн, убеждаемся, что паттерн скрыт
+            document.getElementById('patternDisplayHeader').style.display = 'none';
+            if (patternInterval) {
+                clearInterval(patternInterval);
+                patternInterval = null;
+            }
+        }
+    }
+});
+
+document.getElementById('nextButton').addEventListener('click', () => {
+    if (currentExercise < exercises.length - 1) {
+        clearInterval(timerInterval);
+        if (patternInterval) clearInterval(patternInterval);
+        if (restInterval) clearInterval(restInterval);
+        currentExercise++;
+        switchToExercise(currentExercise);
+        
+        timerInterval = setInterval(() => {
+            if (timeRemaining <= 0 || exerciseTimeRemaining <= 0) {
+                endExercise();
+                return;
+            }
+
+            timeRemaining--;
+            exerciseTimeRemaining--;
+            
+            document.getElementById('exerciseTimeSlider').value = 
+                exercises[currentExercise].duration - exerciseTimeRemaining;
+
+            if (exerciseTimeRemaining <= 0) {
+                if (currentExercise < exercises.length - 1) {
+                    clearInterval(timerInterval);
+                    startRestPeriod();
+                } else {
+                    endExercise();
+                }
+            }
+
+            updateDisplay();
+            updateNavigationButtons();
+        }, 1000);
+
+        // Запускаем паттерн для соответствующего упражнения
+        if (exercises[currentExercise].type === 'pattern') {
+            generateRandomPattern();
+            const intervalMs = exercises[currentExercise].patternInterval * 1000;
+            patternInterval = setInterval(generateRandomPattern, intervalMs);
+        }
+    }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const slider = document.getElementById('exerciseTimeSlider');
+    slider.max = exercises[0].duration;
+    slider.value = 0;
+});
+
+      updateNavigationButtons();
+      updateDisplay();
+    </script>
+</body>
+</html>
