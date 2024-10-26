@@ -129,84 +129,281 @@
             100% { opacity: 1; }
         }
 
-        .metronome-buttons {
-            margin-top: 10px;
-        }
-        .metronome-buttons button {
-            background-color: #2196F3;
-            color: white;
-            padding: 5px 10px;
-            margin: 5px;
-            cursor: pointer;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-        }
+    .metronome-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        padding: 12px;
+        border-radius: 50%;
+        background-color: #2196F3;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .metronome-button:hover {
+        background-color: #1976D2;
+    }
+
+    .metronome-button:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
+
+    .metronome-icon {
+        width: 24px;
+        height: 24px;
+        fill: white;
+    }
+
+    .metronome-icon .play-icon {
+        display: block;
+    }
+
+    .metronome-icon .pause-icon {
+        display: none;
+    }
+
+    .metronome-icon.active .play-icon {
+        display: none;
+    }
+
+    .metronome-icon.active .pause-icon {
+        display: block;
+    }
+	.metronome-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.slider-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.slider-container input[type="range"] {
+    flex: 1;
+}
+
+#bpmValue {
+    min-width: 70px;
+}
+
+.metronome-buttons button {
+    background-color: #2196F3;
+    color: white;
+    padding: 4px 8px;
+    margin: 3px;
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+    font-size: 15px;
+    font-weight: 700;
+    min-width: 36px;
+    text-align: center;
+}
+
+.metronome-buttons {
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 4px;
+}
+.timer-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.controls-container {
+    flex: 1;
+    text-align: right;
+    margin-left: 20px;
+}
+
+/* Обновленные стили для кнопок навигации */
+.navigation-controls {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.control-button {
+    width: 40px;
+    height: 40px;
+    padding: 8px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    background: none;
+    margin: 0 4px;
+}
+
+.control-button:hover:not(:disabled) {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.control-button:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    /* Удалите background-color для disabled состояния */
+}
+
+#startButton {
+    color: #4CAF50;
+}
+
+#startButton:disabled {
+    color: #4CAF50;
+}
+
+#pauseButton {
+    color: #FFA000;
+}
+
+#pauseButton:disabled {
+    color: #FFA000;
+}
+
+#resetButton {
+    color: #F44336;
+}
+
+#resetButton:disabled {
+    color: #F44336;
+}
+
+.control-icon {
+    width: 24px;
+    height: 24px;
+}
     </style>
 </head>
 <body>
     <div class="timer-metronome-container">
         <div class="timer-display" id="mainTimer">60:00</div>
         <div class="metronome">
-            <h3>Метроном</h3>
-            <button id="metronomeToggle">Включить метроном</button>
-            <input type="range" id="bpmSlider" min="40" max="200" value="70">
-            <span id="bpmValue">70 BPM</span>
-            <div class="metronome-buttons">
-                <button class="bpm-preset" data-bpm="60">60 BPM</button>
-                <button class="bpm-preset" data-bpm="70">70 BPM</button>
-                <button class="bpm-preset" data-bpm="80">80 BPM</button>
-                <button class="bpm-preset" data-bpm="160">160 BPM</button>
-            </div>
-        </div>
+			<div class="metronome-controls">
+				<div class="slider-container">
+					<input type="range" id="bpmSlider" min="40" max="200" value="70">
+					<span id="bpmValue">70 BPM</span>
+				</div>
+				<button id="metronomeToggle" class="metronome-button">
+					<svg class="metronome-icon play" viewBox="0 0 24 24" width="24" height="24">
+						<path d="M8 5v14l11-7z" class="play-icon"></path>
+						<path d="M6 6h4v12H6zm8 0h4v12h-4z" class="pause-icon"></path>
+					</svg>
+				</button>
+			</div>
+			<div class="metronome-buttons">
+			  <button class="bpm-preset" data-bpm="60">60</button>
+				<button class="bpm-preset" data-bpm="70">70</button>
+				<button class="bpm-preset" data-bpm="80">80</button>
+				<button class="bpm-preset" data-bpm="90">90</button>
+				<button class="bpm-preset" data-bpm="100">100</button>
+				<button class="bpm-preset" data-bpm="120">120</button>
+				<button class="bpm-preset" data-bpm="140">140</button>
+				<button class="bpm-preset" data-bpm="160">160</button>
+			</div>
+		</div>
     </div>
     <div class="pattern-warning" id="patternWarning">
         Внимание! Паттерн изменится через <span id="patternCountdown">5</span> секунд
     </div>
-    <div class="exercise-timer-container">
-        <div class="exercise-timer">
-            <span>Осталось времени: </span>
-            <span class="time-display" id="exerciseTimeDisplay">00:00</span>
-        </div>
-        <div class="pattern-display" id="patternDisplayHeader"></div>
+<div class="exercise-timer-container">
+    <div class="exercise-timer">
+        <span>Упражнение: </span>
+        <span class="time-display" id="exerciseTimeDisplay">00:00</span>
     </div>
-    <div class="exercise-container">
-        <div class="exercise-display" id="currentExercise">
-            Подготовьтесь к началу тренировки
-        </div>
-        <div class="controls-container">
-            <div class="controls">
-                <button id="startButton">Начать</button>
-                <button id="pauseButton" disabled>Пауза</button>
-                <button id="resetButton">Сброс</button>
-            </div>
-            <div class="navigation-controls">
-                <button class="nav-button" id="prevButton" disabled>← Предыдущее</button>
-                <button class="nav-button" id="nextButton" disabled>Следующее →</button>
-            </div>
+    <div class="timer-controls">
+        <button id="startButton" class="control-button">
+            <svg viewBox="0 0 24 24" width="24" height="24" class="control-icon">
+                <path d="M8 5v14l11-7z" fill="currentColor"/>
+            </svg>
+        </button>
+        <button id="pauseButton" class="control-button" disabled>
+            <svg viewBox="0 0 24 24" width="24" height="24" class="control-icon">
+                <path d="M6 4h4v16H6zm8 0h4v16h-4z" fill="currentColor"/>
+            </svg>
+        </button>
+        <button id="resetButton" class="control-button">
+            <svg viewBox="0 0 24 24" width="24" height="24" class="control-icon">
+                <path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" fill="currentColor"/>
+            </svg>
+        </button>
+    </div>
+    <div class="pattern-display" id="patternDisplayHeader"></div>
+</div>
+<div class="exercise-container">
+    <div class="exercise-display" id="currentExercise">
+        Подготовьтесь к началу тренировки
+    </div>
+    <div class="controls-container">
+        <div class="navigation-controls">
+            <button class="nav-button" id="prevButton" disabled>← Предыдущее</button>
+            <button class="nav-button" id="nextButton" disabled>Следующее →</button>
         </div>
     </div>
-    <input type="range" id="exerciseTimeSlider" min="0" max="600" value="0" class="mobile-friendly">
-    <div class="random-pattern" id="randomPattern"></div>
+</div>
+<input type="range" id="exerciseTimeSlider" min="0" max="600" value="0" class="mobile-friendly">
 
     <script>
         const exercises = [
              {
                 name: "Упражнение 0: ти-ти-та-ти",
-                duration: 600,
+                duration: 700,
                 description: "Выполняйте упражнение ти-ти-та-ти. Комбинация будет меняться.",
                 imageUrl: "https://example.com/image0.jpg",
                 youtubeLink: "https://www.youtube.com/watch?v=example&t=30s",
                 type: "pattern",
-                patternInterval: 10,
+                patternInterval: 120,
                 patterns: [ 
-                    "ти-та-та", 
-                    "ти-ти-та", 
-                    "та-ти-ти", 
-                    "ти-ти-ти-та",
-                    "та-ти-ти-ти", 
-                    "ти-та-ти-ти", 
-                    "ти-ти-та-ти"
+					"ти-ти-та",
+					"ти-та-ти",
+					"та-ти-ти",
+					"та-та-ти",
+					"та-ти-та",
+					"ти-та-та",
+					
+					"ти-ти-ти-та",
+					"ти-ти-та-ти",
+					"ти-та-ти-ти",
+					"та-ти-ти-ти",
+					"та-та-ти-ти",
+					"та-ти-та-ти",
+					"ти-та-та-ти",
+					"ти-ти-та-та",
+					"ти-та-ти-та",
+					"та-ти-ти-та",
+					"та-ти-та-та",
+					"та-та-ти-та",
+					"та-та-та-ти",
+					"ти-та-та-та",
+					
+					"ти-ти-та ти-ти-ти-та",
+					"ти-та-ти та-ти-ти-ти",
+					"та-ти-ти ти-та-ти-ти",
+					"ти-та-та ти-ти-та-ти",
+					"та-ти-та ти-та-та-ти",
+					"та-та-ти та-ти-ти-та",
+					
+					"ти-ти-ти-та ти-ти-та",
+					"та-ти-ти-ти та-ти-та",
+					"ти-та-ти-ти ти-та-та",
+					"ти-ти-та-ти та-ти-ти",
+					"та-ти-та-ти ти-та-ти",
+					"ти-та-та-ти та-та-ти"
                 ]
             },
             {
@@ -288,6 +485,33 @@
             oscillator.stop(audioContext.currentTime + 0.3);
         }
 		
+function endExercise() {
+  clearInterval(timerInterval);
+    clearInterval(patternInterval);
+    if (metronomeInterval) {
+        clearInterval(metronomeInterval);
+        isMetronomeOn = false;
+        document.querySelector('.metronome-icon').classList.remove('active');
+    }
+    document.getElementById('startButton').disabled = false;
+    document.getElementById('pauseButton').disabled = true;
+    document.getElementById('resetButton').disabled = false; // Кнопка сброса остается активной
+    document.getElementById('nextButton').disabled = true;
+    document.getElementById('prevButton').disabled = true;
+    document.getElementById('patternDisplayHeader').style.display = 'none';
+    
+    // Устанавливаем значения таймеров в 0
+    timeRemaining = 0;
+    exerciseTimeRemaining = 0;
+    document.getElementById('mainTimer').textContent = formatTime(0);
+    document.getElementById('exerciseTimeDisplay').textContent = formatTime(0);
+    
+    document.getElementById('currentExercise').innerHTML = `
+        <h2>Тренировка завершена!</h2>
+        <p>Поздравляем! Вы выполнили все упражнения.</p>
+    `;
+}
+		
 function startPatternWarning() {
     const warningElement = document.getElementById('patternWarning');
     const countdownElement = document.getElementById('patternCountdown');
@@ -330,10 +554,11 @@ function switchToNextExercise() {
         }
 
         // Функция для обновления состояния навигационных кнопок
-        function updateNavigationButtons() {
-            document.getElementById('prevButton').disabled = currentExercise <= 0;
-            document.getElementById('nextButton').disabled = currentExercise >= exercises.length - 1;
-        }
+function updateNavigationButtons() {
+    const isRunning = !document.getElementById('startButton').disabled;
+    document.getElementById('prevButton').disabled = currentExercise <= 0 || isPaused;
+    document.getElementById('nextButton').disabled = currentExercise >= exercises.length - 1 || isPaused;
+}
         
 function calculateTotalRemainingTime() {
     let totalTime = calculateTotalExercisesTime(); // Общее время всех упражнений
@@ -415,7 +640,6 @@ function switchToExercise(index) {
         updateNavigationButtons();
         
         // Убираем работу с паттернами при переключении упражнений
-        document.getElementById('randomPattern').textContent = '';
         if (patternInterval) {
             clearInterval(patternInterval);
             patternInterval = null;
@@ -434,7 +658,7 @@ function startRestPeriod() {
     if (metronomeInterval) {
         clearInterval(metronomeInterval);
         isMetronomeOn = false;
-        document.getElementById('metronomeToggle').textContent = 'Включить метроном';
+        document.querySelector('.metronome-icon').classList.remove('active');
     }
 
     // Очищаем предыдущие интервалы
@@ -485,7 +709,7 @@ function startRestPeriod() {
                 // Восстанавливаем состояние метронома
                 if (wasMetronomeOn) {
                     isMetronomeOn = true;
-                    document.getElementById('metronomeToggle').textContent = 'Выключить метроном';
+                    document.querySelector('.metronome-icon').classList.add('active');
                     startMetronome(previousBpm);
                 }
                 
@@ -568,7 +792,7 @@ function startRestPeriod() {
         }
 
 function startTimer() {
-    if (isPaused) {
+   if (isPaused) {
         isPaused = false;
     } else {
         currentExercise = 0;
@@ -582,8 +806,10 @@ function startTimer() {
     }
 
     document.getElementById('startButton').disabled = true;
-    document.getElementById('pauseButton').disabled = false;
-    updateNavigationButtons();
+    document.getElementById('pauseButton').disabled = false; // Включаем кнопку паузы
+    document.getElementById('resetButton').disabled = false; // Включаем кнопку сброса
+    updateNavigationButtons(); // Обновляем навигационные кнопки
+
 
     timerInterval = setInterval(() => {
         if (timeRemaining <= 0 || exerciseTimeRemaining <= 0) {
@@ -624,7 +850,6 @@ function switchToExercise(index) {
         updateNavigationButtons();
         
         // Убираем работу с паттернами при переключении упражнений
-        document.getElementById('randomPattern').textContent = '';
         if (patternInterval) {
             clearInterval(patternInterval);
             patternInterval = null;
@@ -636,55 +861,92 @@ function switchToExercise(index) {
       
         document.getElementById('startButton').addEventListener('click', startTimer);
 
-        document.getElementById('pauseButton').addEventListener('click', () => {
-            clearInterval(timerInterval);
-            if (patternInterval) clearInterval(patternInterval);
-            if (metronomeInterval) clearInterval(metronomeInterval);
-            isPaused = true;
-            document.getElementById('startButton').disabled = false;
-            document.getElementById('pauseButton').disabled = true;
-            document.getElementById('nextButton').disabled = true;
-            document.getElementById('prevButton').disabled = true;
-        });
+document.getElementById('pauseButton').addEventListener('click', () => {
+    clearInterval(timerInterval);
+    if (patternInterval) clearInterval(patternInterval);
+    if (metronomeInterval) clearInterval(metronomeInterval);
+    isPaused = true;
+    document.getElementById('startButton').disabled = false;
+    document.getElementById('pauseButton').disabled = true;
+    document.getElementById('resetButton').disabled = false; // Кнопка сброса остается активной
+    document.getElementById('nextButton').disabled = true;
+    document.getElementById('prevButton').disabled = true;
+});
 
 document.getElementById('resetButton').addEventListener('click', () => {
+    // Очищаем все интервалы
     clearInterval(timerInterval);
     clearInterval(patternInterval);
-    if (metronomeInterval) clearInterval(metronomeInterval);
-    timeRemaining = calculateTotalExercisesTime(); // Используем общее время упражнений
+    clearInterval(restInterval);
+    
+    // Останавливаем и сбрасываем метроном
+    if (metronomeInterval) {
+        clearInterval(metronomeInterval);
+        isMetronomeOn = false;
+        document.querySelector('.metronome-icon').classList.remove('active');
+    }
+    
+    // Сбрасываем все переменные состояния
     currentExercise = 0;
+    timeRemaining = calculateTotalExercisesTime();
     exerciseTimeRemaining = exercises[0].duration;
     isPaused = false;
+    
+    // Сбрасываем состояние кнопок
     document.getElementById('startButton').disabled = false;
     document.getElementById('pauseButton').disabled = true;
     document.getElementById('nextButton').disabled = true;
     document.getElementById('prevButton').disabled = true;
-    document.getElementById('randomPattern').textContent = '';
+    
+    // Сбрасываем все отображения
+    document.getElementById('mainTimer').textContent = formatTime(timeRemaining);
+    document.getElementById('exerciseTimeDisplay').textContent = formatTime(exerciseTimeRemaining);
+    document.getElementById('patternDisplayHeader').style.display = 'none';
+    document.getElementById('patternDisplayHeader').textContent = '';
+    document.getElementById('patternWarning').style.display = 'none';
+    
+    // Сбрасываем слайдер времени
+    const slider = document.getElementById('exerciseTimeSlider');
+    slider.max = exercises[0].duration;
+    slider.value = 0;
+    
+    // Возвращаем исходное отображение упражнения
+    document.getElementById('currentExercise').innerHTML = `
+        <h2>Подготовьтесь к началу тренировки</h2>
+        <p>Нажмите кнопку "Начать" для старта тренировки</p>
+    `;
+    
+    // Убираем все классы состояния
+    document.getElementById('exerciseTimeDisplay').classList.remove('rest');
+    
     updateDisplay();
+    updateNavigationButtons();
 });
 
-        document.querySelectorAll('.bpm-preset').forEach(button => {
-            button.addEventListener('click', function() {
-                const bpm = parseInt(this.getAttribute('data-bpm'));
-                if (!isMetronomeOn) {
-                    isMetronomeOn = true;
-                    document.getElementById('metronomeToggle').textContent = 'Выключить метроном';
-                }
-                startMetronome(bpm);
-            });
-        });
+document.querySelectorAll('.bpm-preset').forEach(button => {
+    button.addEventListener('click', function() {
+        const bpm = parseInt(this.getAttribute('data-bpm'));
+        if (!isMetronomeOn) {
+            isMetronomeOn = true;
+            document.querySelector('.metronome-icon').classList.add('active');
+        }
+        startMetronome(bpm);
+    });
+});
 
-        document.getElementById('metronomeToggle').addEventListener('click', function() {
-            if (!isMetronomeOn) {
-                startMetronome();
-                this.textContent = 'Выключить метроном';
-                isMetronomeOn = true;
-            } else {
-                if (metronomeInterval) clearInterval(metronomeInterval);
-                this.textContent = 'Включить метроном';
-                isMetronomeOn = false;
-            }
-        });
+document.getElementById('metronomeToggle').addEventListener('click', function() {
+    const icon = this.querySelector('.metronome-icon');
+    
+    if (!isMetronomeOn) {
+        startMetronome();
+        icon.classList.add('active');
+        isMetronomeOn = true;
+    } else {
+        if (metronomeInterval) clearInterval(metronomeInterval);
+        icon.classList.remove('active');
+        isMetronomeOn = false;
+    }
+});
 
         document.getElementById('bpmSlider').addEventListener('input', function() {
             const bpm = this.value;
@@ -831,6 +1093,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const slider = document.getElementById('exerciseTimeSlider');
     slider.max = exercises[0].duration;
     slider.value = 0;
+    
+    // Инициализируем начальные значения
+    timeRemaining = calculateTotalExercisesTime();
+    exerciseTimeRemaining = exercises[0].duration;
+    updateDisplay();
 });
 
       updateNavigationButtons();
