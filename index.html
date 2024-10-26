@@ -966,14 +966,20 @@ document.getElementById('exerciseTimeSlider').addEventListener('input', function
     }
     
     const sliderValue = Math.min(parseInt(slider.value), maxDuration);
+    const previousExerciseTimeRemaining = exerciseTimeRemaining; // Сохраняем предыдущее значение
     exerciseTimeRemaining = maxDuration - sliderValue;
     
     if (exerciseTimeRemaining < 0) {
         exerciseTimeRemaining = 0;
     }
+
+    // Корректируем общее оставшееся время
+    const timeDifference = previousExerciseTimeRemaining - exerciseTimeRemaining;
+    timeRemaining = Math.max(0, timeRemaining - timeDifference);
     
-    // Обновляем только время текущего упражнения, не трогая общий таймер
+    // Обновляем отображение обоих таймеров
     document.getElementById('exerciseTimeDisplay').textContent = formatTime(exerciseTimeRemaining);
+    document.getElementById('mainTimer').textContent = formatTime(timeRemaining);
     
     if (timerInterval) {
         clearInterval(timerInterval);
